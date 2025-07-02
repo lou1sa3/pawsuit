@@ -15,9 +15,8 @@ if TYPE_CHECKING:
 
 class CatState(Enum):
     """Cat AI state enumeration."""
-    PATROL = "patrol"
+    IDLE = "idle"
     CHASE = "chase"
-    RETURN = "return"
 
 
 class Cat:
@@ -38,57 +37,43 @@ class Cat:
         self.grid_size = grid_size
         self.level = level
         
-        # AI State
-        self.state = CatState.PATROL
+        #AI State 
+        self.state = CatState.IDLE
         self.move_timer = 0
-        self.move_delay = 30  # Frames between moves (cat is slower than player)
+        self.move_delay = 25  
         
-        # Patrol behavior
-        self.patrol_points = self.generate_patrol_path()
-        self.current_patrol_target = 0
-        self.patrol_start = (grid_x, grid_y)
-        
-        # Chase behavior
-        self.chase_range = 4  # Grid cells within which cat will chase
-        self.chase_target = None
-        self.last_known_mouse_pos = None
+        # Chase behavior 
+        self.chase_range = 20  
+        self.mouse_has_moved = False  
+        self.last_known_mouse_pos = (grid_x, grid_y)
         
         # Visual properties
-        self.color = (255, 140, 0)  # Orange
+        self.body_color = (200, 162, 200)  
+        self.belly_color = (255, 253, 208)  
         self.size = grid_size - 2
         
         # Animation
         self.animation_timer = 0
         self.animation_speed = 8
         
-    def generate_patrol_path(self) -> List[Tuple[int, int]]:
+    def should_start_chasing(self, mouse_x: int, mouse_y: int) -> bool:
         """
-        Generate a patrol path for the cat.
+        Determine if cat should start chasing based on mouse movement.
         
+        Args:
+            mouse_x: Mouse grid X position
+            mouse_y: Mouse grid Y position
+            
         Returns:
-            List of (x, y) grid positions for patrol route
+            True if cat should chase, False otherwise
         """
-        # Create a simple rectangular patrol pattern
-        patrol_points = [
-            (self.grid_x, self.grid_y),
-            (self.grid_x + 3, self.grid_y),
-            (self.grid_x + 3, self.grid_y + 3),
-            (self.grid_x, self.grid_y + 3),
-        ]
+        # Check if mouse has moved from initial position
+        if (mouse_x, mouse_y) != self.last_known_mouse_pos:
+            self.mouse_has_moved = True
+            self.last_known_mouse_pos = (mouse_x, mouse_y)
         
-        # Filter out invalid positions
-        valid_points = []
-        for x, y in patrol_points:
-            if (0 <= x < self.level.width and 
-                0 <= y < self.level.height and 
-                not self.level.is_wall(x, y)):
-                valid_points.append((x, y))
-        
-        # If no valid patrol points, just stay in place
-        if not valid_points:
-            valid_points = [(self.grid_x, self.grid_y)]
-        
-        return valid_points
+        # Cat starts chasing as soon as mouse moves
+        return self.mouse_has_moved
     
     @property
     def pixel_x(self) -> int:
@@ -183,25 +168,10 @@ class Cat:
         # Check for walls
         return not self.level.is_wall(grid_x, grid_y)
     
-    def update_patrol(self):
-        """Update patrol behavior."""
-        if not self.patrol_points:
-            return
-        
-        # Get current patrol target
-        target_x, target_y = self.patrol_points[self.current_patrol_target]
-        
-        # Check if reached current patrol point
-        if self.grid_x == target_x and self.grid_y == target_y:
-            # Move to next patrol point
-            self.current_patrol_target = (self.current_patrol_target + 1) % len(self.patrol_points)
-            target_x, target_y = self.patrol_points[self.current_patrol_target]
-        
-        # Move towards patrol target
-        dx, dy = self.get_next_move_towards(target_x, target_y)
-        if dx != 0 or dy != 0:
-            self.grid_x += dx
-            self.grid_y += dy
+    def update_idle(self):
+        """Update idle behavior - cat just waits."""
+        # In idle state, cat doesn't move
+        pass
     
     def update_chase(self, mouse_x: int, mouse_y: int):
         """
@@ -215,32 +185,10 @@ class Cat:
         if self.can_see_mouse(mouse_x, mouse_y):
             self.last_known_mouse_pos = (mouse_x, mouse_y)
         
-        # Chase towards last known position
-        if self.last_known_mouse_pos:
-            target_x, target_y = self.last_known_mouse_pos
-            
-            # If reached last known position, switch back to patrol
-            if self.grid_x == target_x and self.grid_y == target_y:
-                self.state = CatState.RETURN
-                return
-            
-            # Move towards mouse
-            dx, dy = self.get_next_move_towards(target_x, target_y)
-            if dx != 0 or dy != 0:
-                self.grid_x += dx
-                self.grid_y += dy
-    
-    def update_return(self):
-        """Update return to patrol behavior."""
-        # Return to patrol start position
-        target_x, target_y = self.patrol_start
+        # simplified pathfinding
+        target_x, target_y = mouse_x, mouse_y
         
-        # Check if back at patrol start
-        if self.grid_x == target_x and self.grid_y == target_y:
-            self.state = CatState.PATROL
-            return
-        
-        # Move towards patrol start
+        # Move towards mouse
         dx, dy = self.get_next_move_towards(target_x, target_y)
         if dx != 0 or dy != 0:
             self.grid_x += dx
@@ -267,24 +215,14 @@ class Cat:
         self.move_timer = 0
         
         # State machine logic
-        if self.state == CatState.PATROL:
-            # Check if mouse is nearby
-            if self.can_see_mouse(mouse_x, mouse_y):
+        if self.state == CatState.IDLE:
+            # Check if mouse has moved - if so, start chasing
+            if self.should_start_chasing(mouse_x, mouse_y):
                 self.state = CatState.CHASE
-                self.last_known_mouse_pos = (mouse_x, mouse_y)
-            else:
-                self.update_patrol()
         
         elif self.state == CatState.CHASE:
-            # Check if still chasing or lost mouse
-            if self.can_see_mouse(mouse_x, mouse_y):
-                self.update_chase(mouse_x, mouse_y)
-            else:
-                # Continue to last known position
-                self.update_chase(mouse_x, mouse_y)
-        
-        elif self.state == CatState.RETURN:
-            self.update_return()
+            # Always chase the mouse
+            self.update_chase(mouse_x, mouse_y)
     
     def draw(self, screen: pygame.Surface):
         """
@@ -296,70 +234,122 @@ class Cat:
         # Calculate position with small offset for centering
         x = self.pixel_x + 1
         y = self.pixel_y + 1
+        center_x = x + self.size // 2
+        center_y = y + self.size // 2
         
-        # Draw cat body (oval)
-        body_rect = pygame.Rect(x + 4, y + 8, self.size - 8, self.size - 12)
-        pygame.draw.ellipse(screen, self.color, body_rect)
+        # Cat body
+        body_radius = self.size // 2
+        pygame.draw.circle(screen, self.body_color, (center_x, center_y), body_radius)
         
-        # Draw cat head (circle)
-        head_center = (x + self.size // 2, y + self.size // 3)
-        head_radius = self.size // 4
-        pygame.draw.circle(screen, self.color, head_center, head_radius)
+        # Belly
+        belly_radius = body_radius - 5
+        pygame.draw.circle(screen, self.belly_color, (center_x, center_y + 3), belly_radius)
         
-        # Draw cat ears (triangles)
-        ear_size = self.size // 8
-        left_ear = [
-            (x + self.size // 2 - ear_size, y + ear_size),
-            (x + self.size // 2 - ear_size // 2, y),
-            (x + self.size // 2, y + ear_size)
+        # Cat ears
+        ear_size = self.size // 4
+        ear_offset = self.size // 3
+        
+        # Left ear
+        left_ear_points = [
+            (center_x - ear_offset, center_y - ear_size),
+            (center_x - ear_offset - ear_size//2, center_y - ear_size - ear_size//2),
+            (center_x - ear_offset + ear_size//2, center_y - ear_size - ear_size//2)
         ]
-        right_ear = [
-            (x + self.size // 2, y + ear_size),
-            (x + self.size // 2 + ear_size // 2, y),
-            (x + self.size // 2 + ear_size, y + ear_size)
+        pygame.draw.polygon(screen, self.body_color, left_ear_points)
+        
+        # Left ear inner
+        inner_ear_points = [
+            (center_x - ear_offset, center_y - ear_size + 2),
+            (center_x - ear_offset - ear_size//3, center_y - ear_size - ear_size//3),
+            (center_x - ear_offset + ear_size//3, center_y - ear_size - ear_size//3)
         ]
+        pygame.draw.polygon(screen, (255, 192, 203), inner_ear_points)
         
-        pygame.draw.polygon(screen, self.color, left_ear)
-        pygame.draw.polygon(screen, self.color, right_ear)
+        # Right ear
+        right_ear_points = [
+            (center_x + ear_offset, center_y - ear_size),
+            (center_x + ear_offset - ear_size//2, center_y - ear_size - ear_size//2),
+            (center_x + ear_offset + ear_size//2, center_y - ear_size - ear_size//2)
+        ]
+        pygame.draw.polygon(screen, self.body_color, right_ear_points)
         
-        # Draw eyes (green)
-        eye_color = (0, 255, 0)  # Green eyes
-        eye_size = 2
-        eye_y = y + self.size // 3 - 2
+        # Right ear inner
+        inner_ear_points = [
+            (center_x + ear_offset, center_y - ear_size + 2),
+            (center_x + ear_offset - ear_size//3, center_y - ear_size - ear_size//3),
+            (center_x + ear_offset + ear_size//3, center_y - ear_size - ear_size//3)
+        ]
+        pygame.draw.polygon(screen, (255, 192, 203), inner_ear_points)
         
-        # Left eye
-        pygame.draw.circle(screen, eye_color,
-                         (x + self.size // 2 - 4, eye_y),
-                         eye_size)
+        # Eyes
+        eye_radius = 5
+        eye_offset = self.size // 4
+        eye_y_offset = -4
         
-        # Right eye
-        pygame.draw.circle(screen, eye_color,
-                         (x + self.size // 2 + 4, eye_y),
-                         eye_size)
+        # Left eye 
+        pygame.draw.circle(screen, (255, 255, 255),
+                         (center_x - eye_offset, center_y + eye_y_offset), eye_radius)
+        # Left eye pupil 
+        pygame.draw.circle(screen, (100, 149, 237),  # Cornflower blue
+                         (center_x - eye_offset + 1, center_y + eye_y_offset), 3)
+        # Left eye sparkle
+        pygame.draw.circle(screen, (255, 255, 255),
+                         (center_x - eye_offset + 2, center_y + eye_y_offset - 1), 1)
         
-        # Draw nose (small black triangle)
+        # Right eye 
+        pygame.draw.circle(screen, (255, 255, 255),
+                         (center_x + eye_offset, center_y + eye_y_offset), eye_radius)
+        # Right eye pupil 
+        pygame.draw.circle(screen, (100, 149, 237),  # Cornflower blue
+                         (center_x + eye_offset + 1, center_y + eye_y_offset), 3)
+        # Right eye sparkle
+        pygame.draw.circle(screen, (255, 255, 255),
+                         (center_x + eye_offset + 2, center_y + eye_y_offset - 1), 1)
+        
+        # Nose
+        nose_y = center_y + 2
         nose_points = [
-            (x + self.size // 2, y + self.size // 3 + 2),
-            (x + self.size // 2 - 2, y + self.size // 3 + 5),
-            (x + self.size // 2 + 2, y + self.size // 3 + 5)
+            (center_x, nose_y),
+            (center_x - 2, nose_y + 3),
+            (center_x + 2, nose_y + 3)
         ]
-        pygame.draw.polygon(screen, (0, 0, 0), nose_points)
+        pygame.draw.polygon(screen, (255, 105, 180), nose_points)
         
-        # Draw tail (animated)
-        tail_sway = 5 if self.animation_timer < self.animation_speed else -5
-        tail_start = (x + self.size - 5, y + self.size - 8)
-        tail_mid = (x + self.size + 5, y + self.size - 12 + tail_sway)
-        tail_end = (x + self.size + 12, y + self.size - 5)
+        # Mouth
+        mouth_y = center_y + 6
+        pygame.draw.arc(screen, (255, 105, 180), 
+                       (center_x - 4, mouth_y - 2, 8, 4), 0, 3.14159, 2)
         
-        pygame.draw.lines(screen, self.color, False, 
-                         [tail_start, tail_mid, tail_end], 3)
+        # Tail
+        tail_sway = 6 if self.animation_timer < self.animation_speed else -6
+        tail_start = (center_x + body_radius - 3, center_y)
+        tail_mid = (center_x + body_radius + 8, center_y + tail_sway)
+        tail_end = (center_x + body_radius + 15, center_y - tail_sway)
         
-        # Draw state indicator (for debugging)
+        # Tail
+        pygame.draw.lines(screen, self.body_color, False, 
+                         [tail_start, tail_mid, tail_end], 4)
+        
+        # Blush Marks
+        pygame.draw.circle(screen, (255, 192, 203),
+                         (center_x - self.size // 3, center_y + 8), 3)
+        pygame.draw.circle(screen, (255, 192, 203),
+                         (center_x + self.size // 3, center_y + 8), 3)
+        
+        # State indicator
         if self.state == CatState.CHASE:
-            # Red circle around cat when chasing
-            pygame.draw.circle(screen, (255, 0, 0), 
-                             (x + self.size // 2, y + self.size // 2),
-                             self.size // 2 + 3, 2)
+            # Pink hearts
+            import math
+            for i in range(4):
+                angle = (self.animation_timer + i * 90) * 0.1
+                heart_x = center_x + int(25 * math.cos(angle))
+                heart_y = center_y + int(25 * math.sin(angle))
+                
+                # Tiny heart
+                pygame.draw.circle(screen, (255, 182, 193), (heart_x - 1, heart_y - 1), 2)
+                pygame.draw.circle(screen, (255, 182, 193), (heart_x + 1, heart_y - 1), 2)
+                pygame.draw.polygon(screen, (255, 182, 193), 
+                                  [(heart_x, heart_y + 2), (heart_x - 2, heart_y), (heart_x + 2, heart_y)])
     
     def get_rect(self) -> pygame.Rect:
         """

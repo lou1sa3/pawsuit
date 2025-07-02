@@ -1,16 +1,16 @@
-# Pawsuit
+# ♡ Pawsuit ♡
 
-A 2D stealth game where a clever mouse must avoid a prowling cat to collect cheese and reach safety.
+A cute 2D stealth game where a clever mouse must avoid a cat to collect cheese and reach safety.
 
 ## Game Description
 
-In Pawsuit, you control a mouse navigating through a kitchen filled with dangers. Your objective is to collect all the cheese pieces while avoiding the patrolling cat and rolling tomato obstacles, then reach the mouse hole to win.
+In Pawsuit, you control a mouse navigating through a kitchen filled with dangers! Your objective is to collect all the cheese pieces while avoiding the chasing cat and rolling obstacles, then reach the mouse hole to win. Everything is designed with a soft, cute aesthetic featuring pastel colors and heart particle effects.
 
-## Features
+## ✨ Features ✨
 
 - **Grid-based movement**: Navigate using WASD keys or arrow keys
 - **Intelligent AI**: Cat patrols the kitchen and chases the mouse when spotted
-- **Dynamic obstacles**: Rolling tomatoes that bounce around the level
+- **Dynamic obstacles**: Rolling obstacles that bounce around the level
 - **Progressive difficulty**: Levels get more challenging with more obstacles and cheese
 - **Score system**: Earn points by collecting cheese
 - **Multiple game states**: Title screen, gameplay, game over, and victory screens
@@ -37,25 +37,26 @@ In Pawsuit, you control a mouse navigating through a kitchen filled with dangers
 
 3. **Objective:**
    - Collect all yellow cheese pieces
-   - Avoid the orange cat (it will chase you if it sees you!)
-   - Avoid red rolling tomatoes
-   - Reach the green mouse hole to win
+   - Avoid the cat (it will chase you if it sees you!)
+   - Avoid obstacles
+   - Reach the mouse hole to win
 
 4. **Game Elements:**
-   - **Gray Mouse**: Your character
-   - **Orange Cat**: Enemy that patrols and chases
-   - **Yellow Cheese**: Collectible items (+10 points each)
-   - **Green Mouse Hole**: Victory goal
-   - **Red Tomatoes**: Rolling obstacles that move in patterns
-   - **Brown Walls**: Obstacles that block movement
+   - **♡ Pink Mouse**: Your character
+   - **♡ Lilac Cat**: Enemy that patrols and chases
+   - **♡ Peach Cheese**: Collectible items (+10 points each)
+   - **♡ Mint Mouse Hole**: Victory portal
+   - **♡ Pink Obstacles**: Rolling obstacles that move in patterns
+   - **♡ Lilac Walls**: Obstacles that block movement
 
-## Game Mechanics
+## ♡ Game Mechanics ♡
 
-- The cat patrols in a fixed pattern but will chase you if you get too close
-- When the cat loses sight of you, it will search your last known location
-- Rolling tomatoes move in straight lines and bounce off walls
-- You must collect ALL cheese before you can win by reaching the mouse hole
-- Touching the cat or a rolling tomato ends the game
+- The cat immediately starts chasing as soon as you move (no hiding!)
+- Stealth and timing are key - use obstacles and corners to avoid the kitty
+- Rolling obstacles move in patterns 
+- Collect sparkly particle trails as you move around the kitchen
+- All cheese must be collected before the mouse hole opens for victory
+
 
 ## Project Structure
 
@@ -63,8 +64,9 @@ In Pawsuit, you control a mouse navigating through a kitchen filled with dangers
 pawsuit/
 ├── main.py          # Game engine and main loop
 ├── player.py        # Mouse character class
-├── cat.py          # Cat AI and behavior
+├── cat.py          # Cat AI with immediate chase behavior
 ├── level.py        # Level generation and management
+├── particles.py     # Heart, sparkle, and twinkle particle effects
 ├── assets/
 │   └── sounds/     # Game sound effects
 ├── requirements.txt # Python dependencies
@@ -78,7 +80,3 @@ The game is built using pygame and follows clean Python coding practices with:
 - Comprehensive docstrings
 - Modular design with separate classes for each game component
 - PEP8 compliant formatting
-
-## License
-
-This project is created for educational purposes. Feel free to modify and enhance! 

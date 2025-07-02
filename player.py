@@ -28,7 +28,8 @@ class Mouse:
         self.grid_size = grid_size
         
         # Visual properties
-        self.color = (150, 150, 150)  # Light gray
+        self.body_color = (255, 182, 193)  # Soft pink
+        self.belly_color = (255, 253, 208)  # Cream
         self.size = grid_size - 4  # Slightly smaller than grid
         
         # Animation properties
@@ -103,52 +104,87 @@ class Mouse:
         # Calculate position with small offset for centering
         x = self.pixel_x + 2
         y = self.pixel_y + 2
+        center_x = x + self.size // 2
+        center_y = y + self.size // 2
         
-        # Draw mouse body (circle)
-        pygame.draw.circle(screen, self.color, 
-                         (x + self.size // 2, y + self.size // 2), 
-                         self.size // 2)
+        # Mouse body (larger, rounder)
+        body_radius = self.size // 2
+        pygame.draw.circle(screen, self.body_color, (center_x, center_y), body_radius)
         
-        # Draw mouse ears (smaller circles)
-        ear_size = self.size // 6
-        ear_offset = self.size // 3
+        # Belly 
+        belly_radius = body_radius - 4
+        pygame.draw.circle(screen, self.belly_color, (center_x, center_y + 2), belly_radius)
         
-        # Left ear
-        pygame.draw.circle(screen, self.color,
-                         (x + ear_offset, y + ear_offset),
-                         ear_size)
+        # Ears 
+        ear_radius = self.size // 5
+        ear_offset_x = self.size // 3
+        ear_offset_y = self.size // 4
         
-        # Right ear
-        pygame.draw.circle(screen, self.color,
-                         (x + self.size - ear_offset, y + ear_offset),
-                         ear_size)
+        # Left ear (outer)
+        pygame.draw.circle(screen, self.body_color,
+                         (center_x - ear_offset_x, center_y - ear_offset_y), ear_radius)
+        # Left ear (inner)
+        pygame.draw.circle(screen, (255, 192, 203),  # Pink inner ear
+                         (center_x - ear_offset_x, center_y - ear_offset_y), ear_radius - 2)
         
-        # Draw eyes (small black dots)
-        eye_size = 2
-        eye_y = y + self.size // 3
+        # Right ear (outer)
+        pygame.draw.circle(screen, self.body_color,
+                         (center_x + ear_offset_x, center_y - ear_offset_y), ear_radius)
+        # Right ear (inner)
+        pygame.draw.circle(screen, (255, 192, 203),  # Pink inner ear
+                         (center_x + ear_offset_x, center_y - ear_offset_y), ear_radius - 2)
         
-        # Left eye
+        # Eyes
+        eye_radius = 4
+        eye_offset = self.size // 4
+        eye_y_offset = -3
+        
+        # Left eye 
+        pygame.draw.circle(screen, (255, 255, 255),
+                         (center_x - eye_offset, center_y + eye_y_offset), eye_radius)
+        # Left eye pupil
         pygame.draw.circle(screen, (0, 0, 0),
-                         (x + self.size // 3, eye_y),
-                         eye_size)
+                         (center_x - eye_offset + 1, center_y + eye_y_offset), 2)
+        # Left eye sparkle 
+        pygame.draw.circle(screen, (255, 255, 255),
+                         (center_x - eye_offset + 2, center_y + eye_y_offset - 1), 1)
         
-        # Right eye
+        # Right eye 
+        pygame.draw.circle(screen, (255, 255, 255),
+                         (center_x + eye_offset, center_y + eye_y_offset), eye_radius)
+        # Right eye pupil
         pygame.draw.circle(screen, (0, 0, 0),
-                         (x + 2 * self.size // 3, eye_y),
-                         eye_size)
+                         (center_x + eye_offset + 1, center_y + eye_y_offset), 2)
+        # Right eye sparkle
+        pygame.draw.circle(screen, (255, 255, 255),
+                         (center_x + eye_offset + 2, center_y + eye_y_offset - 1), 1)
         
-        # Draw nose (small pink dot)
-        nose_color = (255, 192, 203)  # Pink
-        pygame.draw.circle(screen, nose_color,
-                         (x + self.size // 2, y + self.size // 2),
-                         1)
+        # Draw nose 
+        nose_y = center_y + 3
+        nose_size = 2
+        pygame.draw.circle(screen, (255, 105, 180),  # Hot pink
+                         (center_x - 1, nose_y - 1), nose_size // 2)
+        pygame.draw.circle(screen, (255, 105, 180),
+                         (center_x + 1, nose_y - 1), nose_size // 2)
+        pygame.draw.circle(screen, (255, 105, 180),
+                         (center_x, nose_y + 1), nose_size // 2)
         
-        # Draw tail (animated)
-        tail_sway = 3 if self.animation_timer < self.animation_speed else -3
-        tail_start = (x + self.size, y + self.size // 2)
-        tail_end = (x + self.size + 8, y + self.size // 2 + tail_sway)
+        # Tail
+        tail_sway = 4 if self.animation_timer < self.animation_speed else -4
+        tail_start = (center_x + body_radius - 2, center_y)
+        tail_mid = (center_x + body_radius + 6, center_y + tail_sway)
+        tail_end = (center_x + body_radius + 12, center_y - tail_sway)
         
-        pygame.draw.line(screen, self.color, tail_start, tail_end, 2)
+        # Tail
+        pygame.draw.lines(screen, self.body_color, False, 
+                         [tail_start, tail_mid, tail_end], 3)
+        
+        # Add blush marks
+        blush_color = (255, 192, 203, 128)  
+        pygame.draw.circle(screen, (255, 192, 203),
+                         (center_x - self.size // 3, center_y + 5), 3)
+        pygame.draw.circle(screen, (255, 192, 203),
+                         (center_x + self.size // 3, center_y + 5), 3)
     
     def get_rect(self) -> pygame.Rect:
         """

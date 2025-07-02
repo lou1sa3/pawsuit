@@ -49,11 +49,11 @@ class Level:
         
         # Colors
         self.colors = {
-            CellType.EMPTY: (139, 69, 19),     # Brown (kitchen floor)
-            CellType.WALL: (101, 67, 33),      # Dark brown (wall)
-            CellType.CHEESE: (255, 255, 0),    # Yellow (cheese)
-            CellType.GOAL: (34, 139, 34),      # Forest green (mouse hole)
-            CellType.OBSTACLE: (139, 69, 19),  # Brown (floor under obstacle)
+            CellType.EMPTY: (139, 69, 19),     
+            CellType.WALL: (101, 67, 33),      
+            CellType.CHEESE: (255, 255, 0),    
+            CellType.GOAL: (34, 139, 34),      
+            CellType.OBSTACLE: (139, 69, 19),  
         }
         
         # Generate level layout
@@ -145,13 +145,13 @@ class Level:
         
         for _ in range(cheese_count):
             # Try to place cheese in random empty location
-            for _ in range(100):  # Max attempts
+            for _ in range(100):  
                 x = random.randint(1, self.width - 2)
                 y = random.randint(1, self.height - 2)
                 
                 if (self.grid[y][x] == CellType.EMPTY and 
                     (x, y) not in self.cheese_positions and
-                    not (x < 3 and y < 3)):  # Not near mouse start
+                    not (x < 3 and y < 3)):  
                     
                     self.cheese_positions.add((x, y))
                     self.grid[y][x] = CellType.CHEESE
@@ -181,7 +181,7 @@ class Level:
         
         for _ in range(obstacle_count):
             # Try to place rolling obstacle
-            for _ in range(50):  # Max attempts
+            for _ in range(50):  
                 x = random.randint(3, self.width - 4)
                 y = random.randint(3, self.height - 4)
                 
@@ -311,7 +311,7 @@ class Level:
             pygame.draw.circle(screen, (255, 255, 0), (center_x - 1, center_y + 3), 1)
         
         elif cell_type == CellType.GOAL:
-            # Draw mouse hole (dark circle)
+            # Draw mouse hole 
             pygame.draw.circle(screen, (0, 0, 0), (center_x, center_y), 15)
             pygame.draw.circle(screen, (34, 139, 34), (center_x, center_y), 13)
             pygame.draw.circle(screen, (0, 0, 0), (center_x, center_y), 11)
@@ -337,10 +337,10 @@ class RollingObstacle:
         
         # Movement timing
         self.move_timer = 0
-        self.move_delay = 60  # Frames between moves
+        self.move_delay = 60  
         
         # Visual properties
-        self.color = (255, 0, 0)  # Red tomato
+        self.color = (255, 0, 0)  
         self.size = grid_size - 6
         
         # Animation
@@ -407,10 +407,10 @@ class RollingObstacle:
         pygame.draw.circle(screen, highlight_color, 
                          (center_x - 3, center_y - 3), self.size // 4)
         
-        # Draw stem (rotated based on movement)
-        stem_color = (0, 128, 0)  # Dark green
+        # Draw stem 
+        stem_color = (0, 128, 0)  
         stem_length = 8
-        stem_angle = self.rotation * (3.14159 / 180)  # Convert to radians
+        stem_angle = self.rotation * (3.14159 / 180)  
         
         import math
         stem_end_x = center_x + int(stem_length * math.cos(stem_angle))
