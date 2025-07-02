@@ -78,7 +78,3 @@ The game is built using pygame and follows clean Python coding practices with:
 - Comprehensive docstrings
 - Modular design with separate classes for each game component
 - PEP8 compliant formatting
-
-## License
-
-This project is created for educational purposes. Feel free to modify and enhance! 
