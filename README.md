@@ -62,15 +62,15 @@ In Pawsuit, you control a mouse navigating through a kitchen filled with dangers
 
 ```
 pawsuit/
-├── main.py          # Game engine and main loop
-├── player.py        # Mouse character class
-├── cat.py          # Cat AI with immediate chase behavior
-├── level.py        # Level generation and management
-├── particles.py     # Heart, sparkle, and twinkle particle effects
+├── main.py             # Game engine and main loop
+├── player.py           # Mouse character class
+├── cat.py              # Cat AI with immediate chase behavior
+├── level.py            # Level generation and management
+├── particles.py        # Heart, sparkle, and twinkle particle effects
 ├── assets/
-│   └── sounds/     # Game sound effects
-├── requirements.txt # Python dependencies
-└── README.md       # This file
+│   └── sounds/         # Game sound effects
+├── requirements.txt    # Python dependencies
+└── README.md           # This file
 ```
 
 ## Development

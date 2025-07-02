@@ -28,9 +28,9 @@ class Mouse:
         self.grid_size = grid_size
         
         # Visual properties
-        self.body_color = (255, 182, 193)  # Soft pink
+        self.body_color = (255, 182, 193)  # Pink
         self.belly_color = (255, 253, 208)  # Cream
-        self.size = grid_size - 4  # Slightly smaller than grid
+        self.size = grid_size - 4  # Smaller than grid
         
         # Animation properties
         self.animation_timer = 0
@@ -162,7 +162,7 @@ class Mouse:
         # Draw nose 
         nose_y = center_y + 3
         nose_size = 2
-        pygame.draw.circle(screen, (255, 105, 180),  # Hot pink
+        pygame.draw.circle(screen, (255, 105, 180),  # Pink
                          (center_x - 1, nose_y - 1), nose_size // 2)
         pygame.draw.circle(screen, (255, 105, 180),
                          (center_x + 1, nose_y - 1), nose_size // 2)

@@ -47,13 +47,13 @@ class Level:
         # Rolling obstacles (tomatoes)
         self.rolling_obstacles: List[RollingObstacle] = []
         
-        # Colors
+        # Color palette
         self.colors = {
-            CellType.EMPTY: (139, 69, 19),     
-            CellType.WALL: (101, 67, 33),      
-            CellType.CHEESE: (255, 255, 0),    
-            CellType.GOAL: (34, 139, 34),      
-            CellType.OBSTACLE: (139, 69, 19),  
+            CellType.EMPTY: (255, 253, 208),     # Cream floor
+            CellType.WALL: (247, 202, 201),      # Pink walls
+            CellType.CHEESE: (255, 218, 185),    # Peach cheese  
+            CellType.GOAL: (152, 251, 152),      # Mint goal
+            CellType.OBSTACLE: (173, 216, 230),  # Blue obstacles
         }
         
         # Generate level layout
@@ -86,6 +86,9 @@ class Level:
         
         # Add rolling obstacles (tomatoes) based on level
         self.add_rolling_obstacles()
+        
+        # Add static obstacles based on level
+        self.add_static_obstacles()
     
     def add_interior_walls(self):
         """Add interior walls to create interesting layouts."""
@@ -195,6 +198,31 @@ class Level:
                     self.rolling_obstacles.append(obstacle)
                     break
     
+    def add_static_obstacles(self):
+        """Add static obstacles that increase with level difficulty."""
+        # Add static obstacles (kitchen items) based on level
+        # Start adding obstacles after level 2
+        if self.level_number <= 2:
+            return
+            
+        static_obstacle_count = min((self.level_number - 2) * 2, 8)  # Cap at 8 obstacles
+        
+        for _ in range(static_obstacle_count):
+            # Try to place static obstacle
+            for _ in range(50):  
+                x = random.randint(2, self.width - 3)
+                y = random.randint(2, self.height - 3)
+                
+                if (self.grid[y][x] == CellType.EMPTY and
+                    (x, y) not in self.cheese_positions and
+                    (x, y) not in self.goal_positions and
+                    not (x < 4 and y < 4) and  # Avoid starting area
+                    not (x > self.width - 5 and y > self.height - 5)):  # Avoid goal area
+                    
+                    self.grid[y][x] = CellType.OBSTACLE
+                    self.obstacle_positions.add((x, y))
+                    break
+    
     def is_wall(self, x: int, y: int) -> bool:
         """
         Check if position contains a wall or obstacle.
@@ -209,8 +237,8 @@ class Level:
         if x < 0 or x >= self.width or y < 0 or y >= self.height:
             return True
         
-        # Check static walls
-        if self.grid[y][x] == CellType.WALL:
+        # Check static walls and obstacles
+        if self.grid[y][x] in [CellType.WALL, CellType.OBSTACLE]:
             return True
         
         # Check rolling obstacles
@@ -274,9 +302,10 @@ class Level:
                                  self.grid_size, self.grid_size)
                 pygame.draw.rect(screen, color, rect)
                 
-                # Draw cell borders for walls
+                # Draw wall borders
                 if cell_type == CellType.WALL:
-                    pygame.draw.rect(screen, (0, 0, 0), rect, 1)
+                    border_color = (200, 162, 200)  # Purple border
+                    pygame.draw.rect(screen, border_color, rect, 2)
                 
                 # Draw special cell contents
                 self.draw_cell_content(screen, x, y, cell_type)
@@ -301,20 +330,70 @@ class Level:
         center_y = pixel_y + self.grid_size // 2
         
         if cell_type == CellType.CHEESE:
-            # Draw cheese (yellow circle with holes)
-            pygame.draw.circle(screen, (255, 255, 0), (center_x, center_y), 12)
-            pygame.draw.circle(screen, (255, 215, 0), (center_x, center_y), 10)
+            # Draw cheese
+            cheese_color = (255, 218, 185)  # Peach
+            cheese_highlight = (255, 253, 208)  # Cream
+            
+            pygame.draw.circle(screen, cheese_color, (center_x, center_y), 12)
+            pygame.draw.circle(screen, cheese_highlight, (center_x, center_y), 10)
             
             # Cheese holes
-            pygame.draw.circle(screen, (255, 255, 0), (center_x - 3, center_y - 2), 2)
-            pygame.draw.circle(screen, (255, 255, 0), (center_x + 2, center_y + 1), 1)
-            pygame.draw.circle(screen, (255, 255, 0), (center_x - 1, center_y + 3), 1)
+            hole_color = (255, 180, 140)
+            pygame.draw.circle(screen, hole_color, (center_x - 3, center_y - 2), 2)
+            pygame.draw.circle(screen, hole_color, (center_x + 2, center_y + 1), 1)
+            pygame.draw.circle(screen, hole_color, (center_x - 1, center_y + 3), 1)
+            
+            # Sparkle effect
+            pygame.draw.circle(screen, (255, 255, 255), (center_x + 4, center_y - 4), 1)
         
         elif cell_type == CellType.GOAL:
-            # Draw mouse hole 
-            pygame.draw.circle(screen, (0, 0, 0), (center_x, center_y), 15)
-            pygame.draw.circle(screen, (34, 139, 34), (center_x, center_y), 13)
-            pygame.draw.circle(screen, (0, 0, 0), (center_x, center_y), 11)
+            # Draw mouse hole
+            hole_outer = (255, 182, 193)  # Pink
+            hole_inner = (255, 240, 245)  # Pink
+            hole_center = (139, 69, 19)   # Brown center
+            
+            pygame.draw.circle(screen, hole_outer, (center_x, center_y), 15)
+            pygame.draw.circle(screen, hole_inner, (center_x, center_y), 13)
+            pygame.draw.circle(screen, hole_center, (center_x, center_y), 10)
+            
+            # Sparkles around goal
+            sparkle_color = (255, 255, 255)
+            pygame.draw.circle(screen, sparkle_color, (center_x - 12, center_y - 8), 1)
+            pygame.draw.circle(screen, sparkle_color, (center_x + 10, center_y - 12), 1)
+            pygame.draw.circle(screen, sparkle_color, (center_x + 8, center_y + 10), 1)
+        
+        elif cell_type == CellType.OBSTACLE:
+            # Draw static obstacles (kitchen items)
+            # Draw pot
+            pot_color = (255, 182, 193)  # Pink
+            dark_pink = (255, 150, 180)
+            
+            # Pot body
+            pygame.draw.ellipse(screen, pot_color, 
+                              (pixel_x + 4, pixel_y + 8, self.grid_size - 8, self.grid_size - 12))
+            
+            # Pot rim
+            pygame.draw.ellipse(screen, dark_pink,
+                              (pixel_x + 4, pixel_y + 6, self.grid_size - 8, 8))
+            
+            # Handles
+            pygame.draw.circle(screen, dark_pink, (pixel_x + 2, center_y), 3)
+            pygame.draw.circle(screen, dark_pink, (pixel_x + self.grid_size - 2, center_y), 3)
+            
+            # Face
+            # Eyes
+            pygame.draw.circle(screen, (0, 0, 0), (center_x - 6, center_y - 2), 2)
+            pygame.draw.circle(screen, (0, 0, 0), (center_x + 6, center_y - 2), 2)
+            pygame.draw.circle(screen, (255, 255, 255), (center_x - 5, center_y - 3), 1)
+            pygame.draw.circle(screen, (255, 255, 255), (center_x + 7, center_y - 3), 1)
+            
+            # Smile
+            pygame.draw.arc(screen, (0, 0, 0), 
+                          (center_x - 4, center_y + 1, 8, 6), 0, 3.14159, 2)
+            
+            # Blush marks
+            pygame.draw.circle(screen, (255, 200, 200), (center_x - 10, center_y + 2), 2)
+            pygame.draw.circle(screen, (255, 200, 200), (center_x + 10, center_y + 2), 2)
 
 
 class RollingObstacle:
@@ -340,7 +419,7 @@ class RollingObstacle:
         self.move_delay = 60  
         
         # Visual properties
-        self.color = (255, 0, 0)  
+        self.color = (255, 182, 193)  # Pink
         self.size = grid_size - 6
         
         # Animation
@@ -402,19 +481,28 @@ class RollingObstacle:
         # Draw tomato body
         pygame.draw.circle(screen, self.color, (center_x, center_y), self.size // 2)
         
-        # Draw tomato highlight
-        highlight_color = (255, 100, 100)
+        # Draw highlight
+        highlight_color = (255, 218, 224)  # Pink highlight
         pygame.draw.circle(screen, highlight_color, 
                          (center_x - 3, center_y - 3), self.size // 4)
         
-        # Draw stem 
-        stem_color = (0, 128, 0)  
+        # Draw stem
+        stem_color = (152, 251, 152)  # Green
         stem_length = 8
         stem_angle = self.rotation * (3.14159 / 180)  
         
         import math
         stem_end_x = center_x + int(stem_length * math.cos(stem_angle))
         stem_end_y = center_y + int(stem_length * math.sin(stem_angle))
+        
+        # Add face to tomato
+        # Eyes
+        pygame.draw.circle(screen, (0, 0, 0), (center_x - 4, center_y - 2), 1)
+        pygame.draw.circle(screen, (0, 0, 0), (center_x + 4, center_y - 2), 1)
+        
+        # Smile
+        pygame.draw.arc(screen, (0, 0, 0), 
+                      (center_x - 3, center_y + 1, 6, 4), 0, 3.14159, 1)
         
         pygame.draw.line(screen, stem_color, 
                         (center_x, center_y), 

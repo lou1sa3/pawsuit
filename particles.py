@@ -1,7 +1,7 @@
 """
 Particle effects system for Pawsuit game.
 
-Contains classes for creating cute particle effects like hearts, sparkles, and twinkles.
+Contains classes for creating particle effects like hearts, sparkles, and twinkles.
 """
 
 import pygame
@@ -106,8 +106,8 @@ class Particle:
         screen.blit(temp_surface, (self.x - 10, self.y - 10))
     
     def draw_heart(self, surface: pygame.Surface, x: int, y: int, size: float, color: Tuple[int, int, int, int]):
-        """Draw a cute heart shape."""
-        # Simple heart using circles and triangle
+        """Draw a heart shape."""
+        # Heart using circles and triangle
         heart_size = max(2, int(size))
         
         # Left circle
@@ -179,12 +179,12 @@ class ParticleSystem:
         
         # Color palette
         self.colors = {
-            'pink': (255, 182, 193),      # Light pink
-            'lilac': (200, 162, 200),     # Soft lilac
+            'pink': (255, 182, 193),      # Pink
+            'lilac': (200, 162, 200),     # Lilac
             'cream': (255, 253, 208),     # Cream
-            'baby_blue': (173, 216, 230), # Baby blue
-            'peach': (255, 218, 185),     # Soft peach
-            'mint': (152, 251, 152),      # Mint green
+            'baby_blue': (173, 216, 230), # Blue
+            'peach': (255, 218, 185),     # Peach
+            'mint': (152, 251, 152),      # Green
         }
     
     def add_heart_burst(self, x: int, y: int, count: int = 5):

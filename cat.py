@@ -22,7 +22,7 @@ class CatState(Enum):
 class Cat:
     """Enemy AI - a cat that patrols and chases the mouse."""
     
-    def __init__(self, grid_x: int, grid_y: int, grid_size: int, level: 'Level'):
+    def __init__(self, grid_x: int, grid_y: int, grid_size: int, level: 'Level', level_number: int = 1):
         """
         Initialize the cat.
         
@@ -31,16 +31,21 @@ class Cat:
             grid_y: Starting grid Y position
             grid_size: Size of each grid cell in pixels
             level: Current level for navigation
+            level_number: Current level number for difficulty scaling
         """
         self.grid_x = grid_x
         self.grid_y = grid_y
         self.grid_size = grid_size
         self.level = level
+        self.level_number = level_number
         
         #AI State 
         self.state = CatState.IDLE
         self.move_timer = 0
-        self.move_delay = 25  
+        # Speed scaling: cat gets faster each level (lower delay = faster movement)
+        base_delay = 40  # Increased from 25 to make first level easier
+        speed_increase = min(level_number - 1, 10)  # Cap speed increase at level 11
+        self.move_delay = max(base_delay - speed_increase * 2, 8)  # Minimum delay of 8 frames  
         
         # Chase behavior 
         self.chase_range = 20  
@@ -111,7 +116,7 @@ class Cat:
         Returns:
             True if mouse is visible, False otherwise
         """
-        # Simple distance-based detection
+        # Distance-based detection
         distance = self.distance_to(mouse_x, mouse_y)
         return distance <= self.chase_range
     
@@ -147,6 +152,11 @@ class Cat:
         elif self.can_move_to(self.grid_x, self.grid_y + dy):
             return (0, dy)
         else:
+            # If stuck, try all possible moves to find an escape route
+            possible_moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+            for move_dx, move_dy in possible_moves:
+                if self.can_move_to(self.grid_x + move_dx, self.grid_y + move_dy):
+                    return (move_dx, move_dy)
             return (0, 0)
     
     def can_move_to(self, grid_x: int, grid_y: int) -> bool:
@@ -191,8 +201,12 @@ class Cat:
         # Move towards mouse
         dx, dy = self.get_next_move_towards(target_x, target_y)
         if dx != 0 or dy != 0:
-            self.grid_x += dx
-            self.grid_y += dy
+            # Double-check that the move is actually valid before executing
+            new_x = self.grid_x + dx
+            new_y = self.grid_y + dy
+            if self.can_move_to(new_x, new_y):
+                self.grid_x = new_x
+                self.grid_y = new_y
     
     def update(self, mouse_x: int, mouse_y: int):
         """
