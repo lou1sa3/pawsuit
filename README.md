@@ -6,7 +6,7 @@ A cute 2D stealth game where a mouse must avoid a cat to collect cheese and reac
 
 In Pawsuit, you control a mouse navigating through a kitchen filled with obstacles. Your objective is to collect all the cheese pieces while avoiding the cat and rolling obstacles, then reach the mouse hole to win. Everything is designed with a soft, cute aesthetic featuring pastel colors and heart particle effects.
 
-## ✨ Features ✨
+## Features 
 
 - **Grid-based movement**: Navigate using WASD keys or arrow keys
 - **Intelligent AI**: Cat patrols the kitchen and chases the mouse when spotted
