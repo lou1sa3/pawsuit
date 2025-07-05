@@ -69,7 +69,7 @@ In Pawsuit, you control a mouse navigating through a kitchen filled with obstacl
 - Stealth and timing are key -> use obstacles and corners to avoid the kitty
 - Rolling obstacles move in patterns 
 - Collect sparkly particle trails as you move around the kitchen
-- All cheese must be collected before the mouse hole opens for victory
+- All cheese must be collected before the mouse hole opens for victory <3
 
 
 ## Project Structure
