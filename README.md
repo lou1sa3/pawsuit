@@ -19,15 +19,29 @@ In Pawsuit, you control a mouse navigating through a kitchen filled with obstacl
 
 1. Make sure you have Python 3.7+ installed
 2. Install the required dependencies:
+   
+   **Windows:**
    ```bash
    pip install -r requirements.txt
+   ```
+   
+   **Mac/Linux:**
+   ```bash
+   pip3 install -r requirements.txt
    ```
 
 ## How to Play
 
 1. Run the game:
+   
+   **Windows:**
    ```bash
    python main.py
+   ```
+   
+   **Mac/Linux:**
+   ```bash
+   python3 main.py
    ```
 
 2. **Controls:**
